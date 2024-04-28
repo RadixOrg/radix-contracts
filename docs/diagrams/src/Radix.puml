@@ -1,0 +1,25 @@
+@startuml Radix
+
+title Radix
+
+' class definitions
+class RadixRouter
+
+class RadixFactory
+
+class RadixTag
+
+class RadixOwnership
+
+' class relationships
+RadixFactory "1" --> "0..*" RadixTag
+
+RadixFactory "1" --> "0..*" RadixOwnership
+
+RadixRouter "1" --> "0..*" RadixTag
+
+RadixRouter "1" --> "0..*" RadixOwnership
+
+
+
+@enduml
