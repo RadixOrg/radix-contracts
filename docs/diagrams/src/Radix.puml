@@ -1,25 +1,64 @@
 @startuml Radix
 
 title Radix
+' Producer actions
+' - create a Product Collection (Tag + Ownership)
+' - create a NFT for the Product in a product collection
+
+' Customer actions
+' - verify the product has the NFT
+' - claim the NFT
+
+' customers should interface with 1 router
+' producers can interface with their own factoryLine
 
 ' class definitions
-class RadixRouter
+class RadixRouter {
+    + getProductCollection(producer, id) : (tag, ownership)
+}
 
-class RadixFactory
+class RadixFactory {
+    - _collections : map
 
-class RadixTag
+    + getCollection(id) : Collection
+    + createCollection(id)
+}
 
-class RadixOwnership
+class RadixTag {
+    + createProduct(id, metadata, sigHash)
+}
+
+class RadixOwnership {
+    - _tokenIdToSigHash : map
+
+    + addSigHash(id, sigHash)
+    + claimOwnership(id, sig)
+}
+
+struct Collection {
+    name : string
+    tag : RadixTag
+    ownership : RadixOwnership
+}
 
 ' class relationships
-RadixFactory "1" --> "0..*" RadixTag
+RadixRouter "1" --|> "0..*" RadixFactory
 
-RadixFactory "1" --> "0..*" RadixOwnership
+RadixFactory "1" --|> "0..*" RadixTag : generates
 
-RadixRouter "1" --> "0..*" RadixTag
+RadixFactory "1" --|> "0..*" RadixOwnership : generates
 
-RadixRouter "1" --> "0..*" RadixOwnership
+RadixRouter "1" --|> "0..*" RadixTag
 
+RadixRouter "1" --|> "0..*" RadixOwnership
+
+' properties relationships
+RadixFactory::_collections --> Collection
+
+' functions relationships
+RadixRouter::getProductCollection --> RadixFactory::getProductContracts
+
+RadixTag::createProduct --> RadixOwnership::addSigHash
 
 
 @enduml
