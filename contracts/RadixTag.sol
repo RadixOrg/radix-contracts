@@ -42,18 +42,21 @@ contract RadixTag is
     ) external onlyOwner {
         require(sigHash != 0, "Invalid signature hash");
         uint256 tokenId = _nextTokenId++;
-
+        _unpause();
         _safeMint(to, tokenId);
+        _pause();
         _setTokenURI(tokenId, uri);
         RadixOwnership(_ownership).addSigHash(_nextTokenId, sigHash);
     }
 
-    function setOwnershipContract(
-        address ownership
-    ) external {
-        require(msg.sender == _factory, "Only factory can set ownership contract");
+    function initialize(address ownershipContract) external {
+        require(!_isInitialized, "Ownership contract already set");
+        require(
+            msg.sender == _factory,
+            "Only factory can set ownership contract"
+        );
 
-        _ownership= ownership;
+        _ownership = ownershipContract;
         _isInitialized = true;
     }
 
