@@ -8,9 +8,6 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-import "./RadixOwnership.sol";
-
-/// @custom:security-contact francescolaterza00@gmail.com
 contract RadixTag is
     ERC721,
     ERC721Enumerable,
@@ -19,8 +16,6 @@ contract RadixTag is
     Ownable
 {
     uint256 private _nextTokenId;
-    address private _factory;
-    bool private _isInitialized = false;
 
     address private _ownership;
 
@@ -29,8 +24,6 @@ contract RadixTag is
         string memory collectionSymbol,
         address producer
     ) ERC721(collectionName, collectionSymbol) Ownable(producer) {
-        _factory = msg.sender;
-
         // pause token transfers to make NFTs non-transferable by default
         _pause();
     }
@@ -41,23 +34,27 @@ contract RadixTag is
         bytes32 sigHash
     ) external onlyOwner {
         require(sigHash != 0, "Invalid signature hash");
+
         uint256 tokenId = _nextTokenId++;
+
+        // mint the token to the tag address
         _unpause();
         _safeMint(to, tokenId);
         _pause();
+
+        // set token metadata
         _setTokenURI(tokenId, uri);
-        RadixOwnership(_ownership).addSigHash(_nextTokenId, sigHash);
+
+        // set ownership signature hash
+        (bool success, ) = _ownership.call(
+            abi.encodeWithSignature("addSigHash(uint256,bytes32)", tokenId, sigHash)
+        );
+        require(success, "Ownership contract call failed");
     }
 
-    function initialize(address ownershipContract) external {
-        require(!_isInitialized, "Ownership contract already set");
-        require(
-            msg.sender == _factory,
-            "Only factory can set ownership contract"
-        );
-
+    function setOwnershipContract(address ownershipContract) external {
+        require(_ownership == address(0), "Ownership contract already set");
         _ownership = ownershipContract;
-        _isInitialized = true;
     }
 
     // The following functions are overrides required by Solidity.

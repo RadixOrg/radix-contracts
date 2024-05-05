@@ -16,8 +16,8 @@ const main = async () => {
     const seq = ethers.getBytes("0x00");
     const seqHash = ethers.hashMessage(seq);
     const Sig = nfcSK.sign(seqHash);
-    const sig = ethers.getBytes(Sig.compactSerialized);
-    console.log("Signature: ", ethers.hexlify(sig));
+    const sig = ethers.keccak256(Sig.compactSerialized);
+    console.log("Signature: ", sig);
 
     console.log("Checking signature validity...");
     const signerAddr = ethers.verifyMessage(seq, Sig);

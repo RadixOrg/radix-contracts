@@ -9,7 +9,7 @@ module.exports = buildModule("RadixModule", (m) => {
     const ownership = m.contract("RadixOwnership", [collectionName, collectionSymbol, producer, tag]);
 
     // call the set ownership function in the tag contract
-    m.call(tag, "initialize", [ownership])
+    m.call(tag, "setOwnershipContract", [ownership])
 
     return { tag, ownership };
 })

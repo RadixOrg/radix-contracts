@@ -9,11 +9,10 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "./RadixTag.sol";
 
-/// @custom:security-contact francescolaterza00@gmail.com
 contract RadixOwnership is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
     address private immutable _tag;
 
-    mapping (uint256 => bytes32) private _tokenIdToSigHash;
+    mapping(uint256 => bytes32) private _tokenIdToSigHash;
 
     constructor(
         string memory collectionName,
@@ -24,15 +23,18 @@ contract RadixOwnership is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
         _tag = tag;
     }
 
-    function claimOwnership(
-        uint256 tokenId,
-        bytes[64] memory sig
-    ) public {
+    function claimOwnership(uint256 tokenId, bytes32 sig) public {
         // check that the signature exists
-        require(_tokenIdToSigHash[tokenId] != 0, "Tag has not been created yet");
+        require(
+            _tokenIdToSigHash[tokenId] != 0,
+            "Tag has not been created yet"
+        );
 
         // check that the signature is valid
-        require(_tokenIdToSigHash[tokenId] == keccak256(abi.encode(sig)), "Invalid signature");
+        require(
+            _tokenIdToSigHash[tokenId] == keccak256(abi.encode(sig)),
+            "Invalid signature"
+        );
 
         // mint the token to the sender
         _safeMint(msg.sender, tokenId);
@@ -42,9 +44,15 @@ contract RadixOwnership is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
         _setTokenURI(tokenId, string(abi.encodePacked(uri, " owner")));
     }
 
-    function addSigHash(uint256 tokenId, bytes32 sigHash) external {
-        require(msg.sender == _tag, "Only the tag contract can call this function");
-        require(_tokenIdToSigHash[tokenId] == 0, "Tag has already been created");
+    function addSigHash(uint256 tokenId, bytes32 sigHash) public {
+        require(
+            msg.sender == _tag,
+            "Only the tag contract can call this function"
+        );
+        require(
+            _tokenIdToSigHash[tokenId] == 0,
+            "Tag has already been created"
+        );
 
         _tokenIdToSigHash[tokenId] = sigHash;
     }
